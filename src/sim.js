@@ -115,16 +115,7 @@ const clearFrames = {checked: true}
 const running = {checked: true}
 const entities = []
 
-async function mainloop(ctx) {
-  requestAnimationFrame(() => mainloop(ctx))
-
-  if (!running.checked) return
-  ctx.fillStyle = clearColor
-  if (clearFrames.checked) clear(ctx)
-
-  ctx.fillStyle = 'grey'
-  ctx.strokeStyle = 'yellow'
-
+async function mainloop() {
   let current
   const collisions = entities.concat()
   while (current = collisions.pop()) {
@@ -132,12 +123,30 @@ async function mainloop(ctx) {
   }
 
   entities.forEach(entity => entity.move())
+}
+
+async function renderloop(ctx, state, dispatch) {
+  requestAnimationFrame(() => renderloop(ctx, state, dispatch))
+
+  // if (!state.running) return
+  ctx.fillStyle = clearColor
+  // if (state.clearFrames) clear(ctx)
+  clear(ctx)
+
+  ctx.fillStyle = 'grey'
+  ctx.strokeStyle = 'yellow'
+
+  ctx.font = '48px sans-serif'
+  ctx.fillText(state.count, 100, 100)
+
+  // if (Math.random() < 0.1) dispatch('plus')
+
   entities.forEach(entity => entity.display(ctx))
   // entities.forEach(entity => entity.displayDebug(ctx))
 }
 
-;(async function init() {
-  const canvas = document.getElementById('bouncy')
+export function init(state, dispatch) {
+  const canvas = document.getElementById('canvas')
   canvas.width = width
   canvas.height = height
   const context = canvas.getContext('2d')
@@ -146,5 +155,6 @@ async function mainloop(ctx) {
     new Bouncy(width * Math.random(), height * Math.random(), 15 + 15 * Math.random())
   )
 
-  requestAnimationFrame(() => mainloop(context))
-})()
+  requestAnimationFrame(() => renderloop(context, state, dispatch))
+  setInterval(() => mainloop(state, dispatch), 1000 / 60)
+}
